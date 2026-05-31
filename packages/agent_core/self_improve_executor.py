@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import json
 from pathlib import Path
 
@@ -10,7 +11,13 @@ from packages.agent_core.models import ImprovementSuggestion, PullRequestDraft, 
 
 class SelfImproveExecutor:
     def __init__(self, repo_path: str | Path | None = None, git_client: GitRepositoryClient | None = None) -> None:
-        self.repo_path = Path(repo_path) if repo_path else Path(__file__).resolve().parent.parent.parent
+        if repo_path:
+            self.repo_path = Path(repo_path)
+        else:
+            if getattr(sys, "frozen", False):
+                self.repo_path = Path(sys.executable).resolve().parent
+            else:
+                self.repo_path = Path(__file__).resolve().parent.parent.parent
         self.git_client = git_client or GitRepositoryClient(repo_path=self.repo_path)
 
     def execute(self, suggestions: list[ImprovementSuggestion], pull_request: PullRequestDraft) -> SelfImproveExecution:

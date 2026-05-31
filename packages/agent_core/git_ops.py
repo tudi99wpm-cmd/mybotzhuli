@@ -1,12 +1,19 @@
 from __future__ import annotations
 
+import sys
 import subprocess
 from pathlib import Path
 
 
 class GitRepositoryClient:
     def __init__(self, repo_path: str | Path | None = None) -> None:
-        self.repo_path = Path(repo_path) if repo_path else Path(__file__).resolve().parent.parent.parent
+        if repo_path:
+            self.repo_path = Path(repo_path)
+        else:
+            if getattr(sys, "frozen", False):
+                self.repo_path = Path(sys.executable).resolve().parent
+            else:
+                self.repo_path = Path(__file__).resolve().parent.parent.parent
 
     def create_branch(self, branch_name: str) -> None:
         self._run(["git", "checkout", "-b", branch_name])
