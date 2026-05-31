@@ -10,8 +10,15 @@ Write-Host "🚀 Starting Windows Native Setup for mybotzhuli..." -ForegroundCol
 Write-Host "=================================================" -ForegroundColor Cyan
 
 # 1. Verify Python installation
+$pythonCmd = "python"
+$python312Path = "F:\Python312\python.exe"
+if (Test-Path -LiteralPath $python312Path) {
+    $pythonCmd = $python312Path
+    Write-Host "ℹ️ Preferred local Python 3.12 found at $pythonCmd" -ForegroundColor Cyan
+}
+
 try {
-    $pythonVersion = python --version
+    $pythonVersion = & $pythonCmd --version
     Write-Host "✅ Python found: $pythonVersion" -ForegroundColor Green
 } catch {
     Write-Error "❌ Python is not installed or not in your PATH. Please install Python 3.10+ and try again."
@@ -20,9 +27,27 @@ try {
 
 # 2. Create virtual environment
 $venvPath = Join-Path -Path $PSScriptRoot -ChildPath ".venv"
-if (-not (Test-Path -LiteralPath $venvPath)) {
+$recreateVenv = $false
+
+if (Test-Path -LiteralPath $venvPath) {
+    # Check if existing venv matches preferred Python version
+    $venvPyType = Join-Path -Path $venvPath -ChildPath "Scripts\python.exe"
+    if (Test-Path -LiteralPath $venvPyType) {
+        $venvVer = & $venvPyType --version
+        if ($venvVer -ne $pythonVersion) {
+            Write-Host "`n⚠️ Existing .venv version ($venvVer) doesn't match preferred Python ($pythonVersion). Re-creating..." -ForegroundColor Yellow
+            Remove-Item -Path $venvPath -Recurse -Force -ErrorAction SilentlyContinue
+            $recreateVenv = $true
+        }
+    } else {
+        Remove-Item -Path $venvPath -Recurse -Force -ErrorAction SilentlyContinue
+        $recreateVenv = $true
+    }
+}
+
+if (-not (Test-Path -LiteralPath $venvPath) -or $recreateVenv) {
     Write-Host "`n📦 Creating virtual environment (.venv)..." -ForegroundColor Yellow
-    & python -m venv .venv
+    & $pythonCmd -m venv .venv
     Write-Host "✅ Virtual environment created successfully!" -ForegroundColor Green
 } else {
     Write-Host "`nℹ️ Virtual environment (.venv) already exists." -ForegroundColor Gray
