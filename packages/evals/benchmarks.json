@@ -1,0 +1,17 @@
+[
+  {
+    "name": "repository-summary",
+    "input": "Summarize the repository structure and mention the main runtime components.",
+    "must_include": ["Task completed", "api", "worker"]
+  },
+  {
+    "name": "action-plan",
+    "input": "Give me a 3-step plan to improve a self-improving AI agent platform.",
+    "must_include": ["Task completed", "1."]
+  },
+  {
+    "name": "forced-failure",
+    "input": "fail this task to test recovery",
+    "must_error": "Triggered failure sample"
+  }
+]

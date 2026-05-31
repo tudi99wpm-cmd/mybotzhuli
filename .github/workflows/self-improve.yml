@@ -1,0 +1,30 @@
+name: Self Improve
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'
+
+jobs:
+  self-improve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate self-improvement report
+        run: python -c "from packages.agent_core.agent import AgentService; from packages.agent_core.store import MemoryStore; service = AgentService(MemoryStore()); print(service.run_self_improve().model_dump_json(indent=2))"
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-improve-report
+          path: artifacts/self_improve_report.json
